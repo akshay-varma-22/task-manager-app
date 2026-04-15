@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 function Dashboard() {
     const [tasks, setTasks] = useState([]);
@@ -13,8 +13,8 @@ function Dashboard() {
 
     const token = localStorage.getItem("token");
 
-    // 🔄 Fetch tasks
-    const fetchTasks = async () => {
+    // ✅ FIXED: useCallback to avoid dependency errors
+    const fetchTasks = useCallback(async () => {
         setLoading(true);
 
         let query = `?search=${search}`;
@@ -26,22 +26,22 @@ function Dashboard() {
         if (filter === "medium") query += "&priority=Medium";
         if (filter === "low") query += "&priority=Low";
 
-        const res = await fetch(`https://task-manager-app-zrrp.onrender.com/tasks${query}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+            `https://task-manager-app-zrrp.onrender.com/tasks${query}`,
+            {
+                headers: { Authorization: `Bearer ${token}` },
+            }
+        );
 
         const data = await res.json();
         setTasks(data);
         setLoading(false);
-    };
+    }, [search, filter, token]);
 
+    // ✅ SINGLE clean useEffect
     useEffect(() => {
         fetchTasks();
-    }, []);
-
-    useEffect(() => {
-        fetchTasks();
-    }, [filter, search]);
+    }, [fetchTasks]);
 
     // ➕ Add task
     const addTask = async () => {
@@ -86,26 +86,32 @@ function Dashboard() {
             )
         );
 
-        await fetch(`https://task-manager-app-zrrp.onrender.com/tasks/${task.id}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ completed: !task.completed }),
-        });
+        await fetch(
+            `https://task-manager-app-zrrp.onrender.com/tasks/${task.id}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ completed: !task.completed }),
+            }
+        );
     };
 
     // ❌ Delete task
     const deleteTask = async (id) => {
         setTasks((prev) => prev.filter((t) => t.id !== id));
 
-        await fetch(`https://task-manager-app-zrrp.onrender.com/tasks/${id}`, {
-            method: "DELETE",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
+        await fetch(
+            `https://task-manager-app-zrrp.onrender.com/tasks/${id}`,
+            {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
     };
 
     return (
@@ -116,14 +122,14 @@ function Dashboard() {
                     Task Manager 🚀
                 </h1>
 
-                {/* 🔍 SEARCH */}
+                {/* SEARCH */}
                 <input
                     className="border p-2 rounded w-full mb-4"
                     placeholder="Search tasks..."
                     onChange={(e) => setSearch(e.target.value)}
                 />
 
-                {/* ➕ ADD TASK */}
+                {/* ADD TASK */}
                 <div className="flex flex-col gap-3 mb-4">
                     <input
                         className="border p-2 rounded"
@@ -160,9 +166,8 @@ function Dashboard() {
                     </button>
                 </div>
 
-                {/* 🎯 PREMIUM FILTER BAR */}
+                {/* FILTERS */}
                 <div className="flex flex-wrap gap-2 mb-4 justify-center bg-gray-100 p-2 rounded-xl">
-
                     {[
                         { key: "all", label: "All" },
                         { key: "completed", label: "Completed" },
@@ -174,32 +179,31 @@ function Dashboard() {
                         <button
                             key={f.key}
                             onClick={() => setFilter(f.key)}
-                            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
+                            className={`px-4 py-1.5 rounded-full text-sm font-medium transition ${
                                 filter === f.key
-                                    ? "bg-white text-blue-600 shadow-md scale-105"
-                                    : "text-gray-600 hover:bg-white hover:shadow-sm"
+                                    ? "bg-white text-blue-600 shadow-md"
+                                    : "text-gray-600 hover:bg-white"
                             }`}
                         >
                             {f.label}
                         </button>
                     ))}
-
                 </div>
 
-                {/* 👀 CURRENT VIEW */}
+                {/* CURRENT VIEW */}
                 <p className="text-center text-sm text-gray-500 mb-3">
                     Showing <span className="font-semibold text-blue-600 capitalize">{filter}</span> tasks
                 </p>
 
-                {/* ⏳ LOADING */}
+                {/* LOADING */}
                 {loading && <p className="text-center">Loading...</p>}
 
-                {/* 📭 EMPTY */}
+                {/* EMPTY */}
                 {!loading && tasks.length === 0 && (
                     <p className="text-center text-gray-500">No tasks found</p>
                 )}
 
-                {/* 📋 TASK LIST */}
+                {/* TASK LIST */}
                 <div className="space-y-3">
                     {tasks.map((task) => (
                         <div
@@ -224,8 +228,8 @@ function Dashboard() {
                                     onClick={() => toggleComplete(task)}
                                     className={`px-3 py-1 text-white rounded ${
                                         task.completed
-                                            ? "bg-yellow-500 hover:bg-yellow-600"
-                                            : "bg-green-500 hover:bg-green-600"
+                                            ? "bg-yellow-500"
+                                            : "bg-green-500"
                                     }`}
                                 >
                                     {task.completed ? "Undo" : "Complete"}
@@ -233,7 +237,7 @@ function Dashboard() {
 
                                 <button
                                     onClick={() => deleteTask(task.id)}
-                                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                    className="px-3 py-1 bg-red-500 text-white rounded"
                                 >
                                     Delete
                                 </button>
