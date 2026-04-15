@@ -17,6 +17,10 @@ def get_db():
 
 @router.post("/signup")
 def signup(user: UserCreate, db: Session = Depends(get_db)):
+    existing_user = db.query(User).filter(User.email == user.email).first()
+    if existing_user:
+        return {"error": "Email already registered"}
+
     try:
         hashed = hash_password(user.password)
         new_user = User(email=user.email, password=hashed)
@@ -27,7 +31,7 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
         return {"message": "User created"}
 
     except Exception as e:
-        print("ERROR:", e)   # 👈 THIS IS KEY
+        print("ERROR:", e)
         return {"error": str(e)}
 
 @router.post("/login")

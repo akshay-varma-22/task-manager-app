@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function Signup() {
   const [email, setEmail] = useState("");
@@ -10,11 +10,17 @@ function Signup() {
   const navigate = useNavigate();
 
   const handleSignup = async () => {
+    // basic validation
+    if (!email || !password) {
+      setError("All fields are required");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
-      const res = await fetch("http://localhost:8000/signup", {   // ✅ changed URL
+      const res = await fetch("http://127.0.0.1:8000/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -32,7 +38,7 @@ function Signup() {
 
       alert("User created successfully!");
 
-      // 👉 redirect to login
+      // ✅ redirect only after success
       navigate("/");
 
     } catch (err) {
@@ -44,30 +50,46 @@ function Signup() {
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "100px auto", textAlign: "center" }}>
-      <h2>Signup</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-6 rounded-xl shadow-md w-80">
+        <h2 className="text-xl font-bold mb-4 text-center">Create Account</h2>
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        style={{ display: "block", width: "100%", marginBottom: "10px", padding: "8px" }}
-      />
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full border p-2 mb-3 rounded"
+        />
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        style={{ display: "block", width: "100%", marginBottom: "10px", padding: "8px" }}
-      />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full border p-2 mb-3 rounded"
+        />
 
-      <button onClick={handleSignup} disabled={loading} style={{ padding: "10px", width: "100%" }}>
-        {loading ? "Creating..." : "Signup"}
-      </button>
+        <button
+          onClick={handleSignup}
+          disabled={loading}
+          className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600"
+        >
+          {loading ? "Creating..." : "Signup"}
+        </button>
 
-      {error && <p style={{ color: "red", marginTop: "10px" }}>{error}</p>}
+        {error && (
+          <p className="text-red-500 text-sm mt-3 text-center">{error}</p>
+        )}
+
+        {/* ✅ Navigation back to login */}
+        <p className="text-sm text-center mt-4">
+          Already have an account?{" "}
+          <Link to="/" className="text-blue-500 hover:underline">
+            Login
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
