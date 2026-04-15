@@ -26,7 +26,7 @@ function Dashboard() {
         if (filter === "medium") query += "&priority=Medium";
         if (filter === "low") query += "&priority=Low";
 
-        const res = await fetch(`http://127.0.0.1:8000/tasks${query}`, {
+        const res = await fetch(`https://task-manager-app-zrrp.onrender.com/tasks${query}`, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -57,7 +57,7 @@ function Dashboard() {
 
         setTasks((prev) => [tempTask, ...prev]);
 
-        await fetch("http://127.0.0.1:8000/tasks", {
+        await fetch("https://task-manager-app-zrrp.onrender.com/tasks", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -86,7 +86,7 @@ function Dashboard() {
             )
         );
 
-        await fetch(`http://127.0.0.1:8000/tasks/${task.id}`, {
+        await fetch(`https://task-manager-app-zrrp.onrender.com/tasks/${task.id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -100,7 +100,7 @@ function Dashboard() {
     const deleteTask = async (id) => {
         setTasks((prev) => prev.filter((t) => t.id !== id));
 
-        await fetch(`http://127.0.0.1:8000/tasks/${id}`, {
+        await fetch(`https://task-manager-app-zrrp.onrender.com/tasks/${id}`, {
             method: "DELETE",
             headers: {
                 Authorization: `Bearer ${token}`,
